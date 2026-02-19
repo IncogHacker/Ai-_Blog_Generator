@@ -1,0 +1,93 @@
+{% load static %}
+<!-- I want to use Django’s static file system in this template -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI-Blog-Generator</title>
+
+    <!-- Adding tailwind  -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@4.1.18/index.min.css" rel="stylesheet">
+
+    <!-- linnking css -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+
+
+
+</head>
+
+<body>
+
+    <section class="Navigation-Bar">
+        <!-- Nav-Bar  -->
+        <nav class="Nav_bar">
+            <div class="AI_Blog_Generator">
+                <p>AI Blog Generator</p>
+            </div>
+
+
+            <form action="logs" method="POST">
+
+                {% csrf_token %}
+                <div class="Left_Nav">
+                    <p>Welcome {{user.username}}</p>
+                    <button type="submit">Logout</button>
+                </div>
+
+            </form>
+        </nav>
+    </section>
+
+    <section class="Main-section">
+        <div class=" Main-Box">
+            <div class="welcome ">
+                <p>Welcome To AI Blog Generator</p>
+                <p>A smart platform designed to help you create high-quality blog content in seconds. Whether you are a
+                    student, developer, marketer, or content creator, this tool uses artificial intelligence to generate
+                    meaningful, well-structured, and engaging blog posts effortlessly.
+
+                    Our AI understands your topic, tone, and purpose to produce blogs that save time and boost
+                    productivity.
+                    From technical articles to creative writing, the AI Blog Generator helps you turn ideas into
+                    complete
+                    blog posts with clarity, originality, and ease — so you can focus more on creativity and less on
+                    writing
+                    stress.</p>
+
+            </div>
+
+            <div class="Youtube-link">
+                <p>Enter Your Youtube Link</p>
+                <div class="Link">
+                    <input id="Yt-Link" type="url" placeholder="Paste Youtube Link...." class="input">
+                    <button class="button">Generate</button>
+                </div>
+            </div>
+
+            <!-- Section for loading  -->
+            <div style="display:none" class="loading-section"></div>
+
+            <!-- Generated Block Section  -->
+            <div class="Blog-Section">
+                <p>Generated Block Section</p>
+            </div>
+        </div>
+    </section>
+
+
+    <footer>
+        Powerd by Algomastery
+    </footer>
+
+
+    <script src="{% static 'js/script.js' %}" defer></script>
+</body>
+
+
+
+</html>

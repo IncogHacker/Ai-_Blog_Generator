@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Sign-Up</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+
+    <section class="Navigation-Bar">
+        <nav class="Nav_bar">
+            <div class="AI_Blog_Generator">
+                <p>AI Blog Generator</p>
+            </div>
+
+            <div class="Left_Nav">
+                <a href="login">Login</a>
+                <a href="signup">Sign-Up</a>
+            </div>
+        </nav>
+    </section>
+
+    <section class="Login_form_sec">
+        <div class="login">
+
+            <!-- FORM START -->
+            <form method="POST" class="login_form" action="">
+
+                {% csrf_token %}
+                <!-- csrf_token is a security token used to protect your backend from CSRF attacks. -->
+                <!-- CSRF = Cross-Site Request Forgery -->
+
+                {% if error_message %}
+
+                <div class="Error" >
+                    {{ error_message }}
+                </div>
+
+                {%endif%}
+
+                <h2>Sign-Up</h2>
+
+
+
+                <div class="username">
+                    <label>Name</label>
+                    <input type="text" name="username" placeholder="Enter Your Username">
+                </div>
+
+                <div class="username">
+                    <label>E-mail</label>
+                    <input type="email" name="email">
+                </div>
+
+                <div class="password">
+                    <label>New Password</label>
+                    <input type="password" name="password">
+                </div>
+
+                <div class="password">
+                    <label>Confirm Password</label>
+                    <input type="password" name="confirm_password">
+                </div>
+
+                <!-- BUTTON MUST BE INSIDE FORM -->
+                <button class="Login_btn" type="submit">Sign-Up</button>
+
+            </form>
+            <!-- FORM END -->
+
+        </div>
+    </section>
+
+</body>
+
+</html>

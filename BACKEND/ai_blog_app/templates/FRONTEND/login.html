@@ -1,0 +1,74 @@
+{% load static%}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Blog-Generator</title>
+    <link rel="stylesheet" href="{%static 'css/style.css' %}">
+</head>
+
+<body>
+    <section class="Navigation-Bar">
+        <!-- Nav-Bar  -->
+        <nav class="Nav_bar">
+            <div class="AI_Blog_Generator">
+                <p>AI Blog Generator</p>
+            </div>
+
+            <div class="Left_Nav">
+                <a href="login">Login</a>
+                <a href="Signup">Sign-Up</a>
+            </div>
+        </nav>
+    </section>
+
+    <section class="Login_form_sec">
+
+        <div class="login">
+
+
+            <form action=" " class="login_form" method="POST">
+                <!-- If form action is empty, the form submits data to the same page URL from which it was opened, so the login still works. -->
+
+                {% csrf_token %}
+
+                {% if error_message %}
+
+                <div class="Error">
+
+                    {{error_message}}
+
+                </div>
+
+                {% endif %}
+
+                <h2>Login</h2>
+
+                <div class="username">
+
+                    <label for="Username">User-Name</label>
+                    <input type="text" placeholder="Enter Your User-Name" name="username">
+
+                </div>
+
+                <div class="password">
+                    <label for="passwrod">Password</label>
+                    <input type="text" name="password" id="password" placeholder="Enter Your Password">
+
+                </div>
+
+                  <button class="Login_btn" type="submit">Login</button>
+
+            </form>
+          
+        </div>
+
+
+    </section>
+
+</body>
+
+</html>
