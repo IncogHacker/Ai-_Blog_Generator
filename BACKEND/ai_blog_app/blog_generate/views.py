@@ -24,7 +24,21 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 # It is used to send data from Django backend → frontend in JSON format.
 
+
+from pytube import YouTube
+
+from django.conf import settings
+# It lets you access your Django project settings (settings.py) inside your code.
+
 import json
+import os
+import assemblyai as aai
+#as aai gives a short nickname (alias) to the module.
+# ✅ AssemblyAI is a speech AI service that converts voice/audio into text using artificial intelligence.
+#
+
+
+
 
 
 
@@ -51,17 +65,24 @@ def generate_blog(request):
 
             links_yt=data['link']
 
-            return JsonResponse({'content':links_yt})
+            # return JsonResponse({'content':links_yt})
         
         except(KeyError,json.JSONDecodeError):
             # KeyError----Happens when key does not exist in dictionary.
             # JSONDeocdeError-----Happens when JSON data is invalid.
+
+            
             return JsonResponse({'error':'Invalid data sent'},status=400)
         
+            
 
         #get yt title
+        Title_yt=youtube_get_Link_data(links_yt)
         
         #get transcript
+        after_transcribe=get_transcription(links_yt)
+        if not after_transcribe:
+            return JsonResponse({'error':"Failed To get Transcript"},status=500)
 
         #use OpenAI to generate the blog
 
@@ -73,7 +94,77 @@ def generate_blog(request):
 
     else:
         return JsonResponse({'error':'Invalid Request Method'},status=405)
+    
+# --------------------------------------------------------------------------------------------------------------------------------------------
+# Getting Youtube link Data like title ,stream,views,thumbnail etc.....
 
+def youtube_get_Link_data(link):
+
+    Store_link = YouTube(link) # Creates YouTube object with video data.
+
+    Title_yt=Store_link.title
+
+    return Title_yt 
+
+# ------------------------------------------------------------------------------------------------------------------------------
+
+#Here we Are getting vedio to Audio to text speech 
+def download_audio(link):
+    Store_link = YouTube(link)
+    
+    audio=Store_link.streams.filter(only_audio=True).first()
+    # This gets the audio stream (sound only) from a YouTube video using PyTube and first means format which is available at the top.
+
+    out_file=audio.download(output_path=settings.MEDIA_ROOT)
+    # This downloads the audio file and saves it in your media folder.
+
+    # audio.download() → downloads file
+
+    # output_path → where to save file
+
+    # settings.MEDIA_ROOT → your media folder path
+
+    
+    base, ext=os.path.splitext(out_file)
+
+    new_file=base + '.mp3'
+    os.rename(out_file ,new_file)
+
+    return new_file
+
+
+def get_transcription(link):
+    audio_file=download_audio(link)
+
+    #setting API key of Assembly Ai
+    aai.settings.api_key=os.environ.get("ASSEMBLY_API_KEY")
+    # It sets your AssemblyAI API key so your program can use AssemblyAI services.
+    # aai → AssemblyAI library
+
+    # settings.api_key → where AssemblyAI stores your API key
+
+    # You are giving the key to AssemblyAI.
+
+
+
+    # Creates a Transcriber object.
+    transcriber=aai.Transcriber()
+    # Transcriber = machine that converts speech to text
+    # It has methods like:
+
+    # .transcribe()
+
+    # .upload()
+
+    # .submit()
+
+    transcriber=transcriber.transcribe(audio_file)
+    # This tells AssemblyAI:--Convert audio to text
+
+    return transcriber.txt
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------
 
 def user_login(request):
 
@@ -96,14 +187,14 @@ def user_login(request):
         else:
             error_message='Invalid Username Or Password'
 
-            return render(request,'FRONTEND\login.html',{'error_message': error_message})
+            return render(request,'FRONTEND/login.html',{'error_message': error_message})
 
         
 
 
     
 
-    return render(request,'FRONTEND\login.html')
+    return render(request,'FRONTEND/login.html')
 
 
 def user_signup(request):
@@ -136,17 +227,17 @@ def user_signup(request):
             except:
                 error_message='Errorn In Creating The Account'
 
-                return render(request,'FRONTEND\Signup.html',{'error_message':error_message})
+                return render(request,'FRONTEND/Signup.html',{'error_message':error_message})
 
 
         else:
            error_message='Password Not Matched'
 
-           return render(request,'FRONTEND\Signup.html',{'error_message':error_message}) # here we render again the page to show the error
+           return render(request,'FRONTEND/Signup.html',{'error_message':error_message}) # here we render again the page to show the error
 
 
 
-    return render(request,'FRONTEND\Signup.html')
+    return render(request,'FRONTEND/Signup.html')
 
 
 

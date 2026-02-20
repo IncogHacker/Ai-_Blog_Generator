@@ -14,7 +14,12 @@ from pathlib import Path
 # pathlib is a Python standard library used to handle file and folder paths easily and safely.
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent   
+# here first setting file path then resolve take full setting path then go two folders up parent so that is base directory
+# so here our BASE_DIR is ai_blog_app
+
+
+import os
 
 
 # Quick-start development settings - unsuitable for production
@@ -121,14 +126,21 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = '/static/'
+# http://127.0.0.1:8000/static/style.css
+# this is url path not actual folder
 
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
+    #Look inside this folder(BASE Directory) for static files.
 ]
 
 
 # "STATIC_URL uses / to define a web-accessible path, while BASE_DIR / 'static' uses / as a pathlib operator to build a system file path."
 
+MEDIA_URL ='/media/'
+
+MEDIA_ROOT=os.path.join(BASE_DIR,'media')
+# This joins your BASE_DIR path with the media folder.
 
 
 LOGIN_URL='login'  
