@@ -1,4 +1,5 @@
 
+from django.core import exceptions
 from django.shortcuts import render,redirect
 # We import render() to send an HTML page as a response to the browser.
 # redirect is used in Django to navigate the user to another URL after an action is completed.
@@ -27,25 +28,23 @@ from django.http import JsonResponse
 
 from pytube import YouTube
 
+
 from django.conf import settings
 # It lets you access your Django project settings (settings.py) inside your code.
 
+from openai import OpenAI
 import json
 import os
-import assemblyai as aai
+import assemblyai as aai  
 #as aai gives a short nickname (alias) to the module.
 # ✅ AssemblyAI is a speech AI service that converts voice/audio into text using artificial intelligence.
-#
-
-
-
-
 
 
 
 # Create your views here.(it is a function)
 # We pass request to the function, but it is not just a normal argument — it is an object.
 # Request is an object that contains user data sent from browser to Django server.
+
 @login_required
 def index(request):
     
@@ -65,6 +64,8 @@ def generate_blog(request):
 
             links_yt=data['link']
 
+            print(f"Your Link is--{links_yt}")
+
             # return JsonResponse({'content':links_yt})
         
         except(KeyError,json.JSONDecodeError):
@@ -77,7 +78,8 @@ def generate_blog(request):
             
 
         #get yt title
-        Title_yt=youtube_get_Link_data(links_yt)
+        Store=youtube_get_Link_data(links_yt)
+        print(f"Your Title is {Store}")
         
         #get transcript
         after_transcribe=get_transcription(links_yt)
@@ -85,86 +87,139 @@ def generate_blog(request):
             return JsonResponse({'error':"Failed To get Transcript"},status=500)
 
         #use OpenAI to generate the blog
+        generated_blog = generate_blog_from_transcriber(after_transcribe)
+        if not generated_blog:
+           return JsonResponse({'error':"Failed To Generate The Blog Article"},status=500)
+        
 
         #save blog article to database
 
         # return blog article as a response
+        return JsonResponse({'content':generated_blog})
 
 
 
     else:
         return JsonResponse({'error':'Invalid Request Method'},status=405)
     
-# --------------------------------------------------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------------------------------------------------
 # Getting Youtube link Data like title ,stream,views,thumbnail etc.....
 
 def youtube_get_Link_data(link):
 
-    Store_link = YouTube(link) # Creates YouTube object with video data.
+    try:
 
-    Title_yt=Store_link.title
+       Store_link = YouTube(link) # Creates YouTube object with video data.
 
-    return Title_yt 
+       print(f"pytube_is_working--{Store_link}\n")
 
-# ------------------------------------------------------------------------------------------------------------------------------
+       Title_yt=Store_link.title
 
+       print(f"Your Youtube Title is --{Title_yt}")
+
+       return Title_yt 
+    
+    except Exception as e:
+        print(f"Your error is----{e}")
+
+    
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------
 #Here we Are getting vedio to Audio to text speech 
 def download_audio(link):
-    Store_link = YouTube(link)
+
+    try:
+        
+        Store_link = YouTube(link)
+        
+        audio=Store_link.streams.filter(only_audio=True).first()
+        # This gets the audio stream (sound only) from a YouTube video using PyTube and first means format which is available at the top.
+
+        out_file=audio.download(output_path=settings.MEDIA_ROOT)
+        # This downloads the audio file and saves it in your media folder.
+
+        # audio.download() → downloads file
+
+        # output_path → where to save file
+
+        # settings.MEDIA_ROOT → your media folder path
+
+        
+        base, ext=os.path.splitext(out_file)
+
+        new_file=base + '.mp3'
+        os.rename(out_file ,new_file)
+
+        return new_file
     
-    audio=Store_link.streams.filter(only_audio=True).first()
-    # This gets the audio stream (sound only) from a YouTube video using PyTube and first means format which is available at the top.
+    except Exception as e:
 
-    out_file=audio.download(output_path=settings.MEDIA_ROOT)
-    # This downloads the audio file and saves it in your media folder.
+        print(f"Audio text is Not Generating{e}")
 
-    # audio.download() → downloads file
-
-    # output_path → where to save file
-
-    # settings.MEDIA_ROOT → your media folder path
-
-    
-    base, ext=os.path.splitext(out_file)
-
-    new_file=base + '.mp3'
-    os.rename(out_file ,new_file)
-
-    return new_file
 
 
 def get_transcription(link):
-    audio_file=download_audio(link)
 
-    #setting API key of Assembly Ai
-    aai.settings.api_key=os.environ.get("ASSEMBLY_API_KEY")
-    # It sets your AssemblyAI API key so your program can use AssemblyAI services.
-    # aai → AssemblyAI library
+    try:
+            audio_file=download_audio(link)
 
-    # settings.api_key → where AssemblyAI stores your API key
+            print(f"Here is audio_file_link--{audio_file}")
 
-    # You are giving the key to AssemblyAI.
+            if not audio_file:
+                return None
+
+            #setting API key of Assembly Ai
+            aai.settings.api_key=os.environ.get("ASSEMBLY_API_KEY")
+            # It sets your AssemblyAI API key so your program can use AssemblyAI services.
+            # aai → AssemblyAI library
+
+            # settings.api_key → where AssemblyAI stores your API key
+
+            # You are giving the key to AssemblyAI.
 
 
 
-    # Creates a Transcriber object.
-    transcriber=aai.Transcriber()
-    # Transcriber = machine that converts speech to text
-    # It has methods like:
+            # Creates a Transcriber object.
+            transcriber=aai.Transcriber()
+            # Transcriber = machine that converts speech to text
+            # It has methods like:
 
-    # .transcribe()
+            # .transcribe()
 
-    # .upload()
+            # .upload()
 
-    # .submit()
+            # .submit()
 
-    transcriber=transcriber.transcribe(audio_file)
-    # This tells AssemblyAI:--Convert audio to text
+            transcript=transcriber.transcribe(audio_file)
+            # This tells AssemblyAI:--Convert audio to text
 
-    return transcriber.txt
-
+            return transcript.text
+    
+    except Exception as e:
+        print(f"Transcription Error--{e}")
 
 # ---------------------------------------------------------------------------------------------------------------------------------
+#Transcript → Prompt → OpenAI → Blog content → Return
+
+def generate_blog_from_transcriber(transcript):
+
+    client=OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    # System → get API key → connect OpenAI → store in client
+
+    prompt=f"Based On th following transcript from a Youtube Video, write a comphrensive blog article, write it based on transcript but dont make it look like a youtube vedio make it look like a blog article:\n\n{transcript}\n\n Article"
+
+    response=client.chat.completions.create(
+        model="gpt-4.1-mini",
+        messages=[{"role":"user","content":prompt}],
+        max_tokens=1000  #1000 tokens ≈ ~700–800 words.
+
+    )
+
+    return response.choices[0].message.content
+
+
+#-----------------------------------------------------------------------------------------------------------------------------------
+
 
 def user_login(request):
 

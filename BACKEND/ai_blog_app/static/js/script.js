@@ -17,10 +17,7 @@ document.querySelector(".button").addEventListener('click',async()=>{
 
         Circle_loading.style.display="block"
 
-        // Circle_loading.classList.remove("hidden")
-        // console.log(Circle_loading)
-
-        Blog_content.innerHTML=""
+        Blog_content.innerHTML=" "
 
 
         const endpointurl="/generate-blog"
@@ -49,6 +46,8 @@ document.querySelector(".button").addEventListener('click',async()=>{
                 })
 
                 let GetData= await response.json()
+
+                console.log(GetData)
 
                 Blog_content.innerHTML=GetData.content
                 Circle_loading.style.display="none"
