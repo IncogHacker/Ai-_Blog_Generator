@@ -25,7 +25,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 # It is used to send data from Django backend → frontend in JSON format.
 
-
 from pytube import YouTube
 
 
@@ -79,7 +78,7 @@ def generate_blog(request):
 
         #get yt title
         Store=youtube_get_Link_data(links_yt)
-        print(f"Your Title is {Store}")
+        # print(f"Your Title is {Store}")
         
         #get transcript
         after_transcribe=get_transcription(links_yt)
@@ -103,7 +102,9 @@ def generate_blog(request):
         return JsonResponse({'error':'Invalid Request Method'},status=405)
     
 #--------------------------------------------------------------------------------------------------------------------------------------------
+
 # Getting Youtube link Data like title ,stream,views,thumbnail etc.....
+
 
 def youtube_get_Link_data(link):
 
@@ -115,12 +116,14 @@ def youtube_get_Link_data(link):
 
        Title_yt=Store_link.title
 
-       print(f"Your Youtube Title is --{Title_yt}")
+       print(f"Title is fetched --{Title_yt}")
 
        return Title_yt 
     
     except Exception as e:
-        print(f"Your error is----{e}")
+        print(f"Your error in Get_link_Data----{e}")
+
+        return None
 
     
 
@@ -154,7 +157,8 @@ def download_audio(link):
     
     except Exception as e:
 
-        print(f"Audio text is Not Generating{e}")
+        print(f"Audio text is Not Generating----{e}")
+        
 
 
 
@@ -163,13 +167,17 @@ def get_transcription(link):
     try:
             audio_file=download_audio(link)
 
-            print(f"Here is audio_file_link--{audio_file}")
+            print(f"Here is audio_file After Download--{audio_file}\n")
 
             if not audio_file:
                 return None
 
             #setting API key of Assembly Ai
             aai.settings.api_key=os.environ.get("ASSEMBLY_API_KEY")
+
+            if not os.environ.get("ASSEMBLY_API_KEY"):
+                print("Assembly Key Is Not present")
+                return None
             # It sets your AssemblyAI API key so your program can use AssemblyAI services.
             # aai → AssemblyAI library
 
@@ -204,6 +212,10 @@ def get_transcription(link):
 def generate_blog_from_transcriber(transcript):
 
     client=OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
+    if not os.environ.get("OPENAI_API_KEY"):
+        print("OPEN_API--KEY --NOT FOUND")
+        return None
     # System → get API key → connect OpenAI → store in client
 
     prompt=f"Based On th following transcript from a Youtube Video, write a comphrensive blog article, write it based on transcript but dont make it look like a youtube vedio make it look like a blog article:\n\n{transcript}\n\n Article"

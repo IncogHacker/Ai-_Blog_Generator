@@ -22,7 +22,7 @@ urlpatterns = [
 
      path('logs',views.user_logout, name='logs'),
 
-     path('generate-blog',views.generate_blog, name='generate-blog')
+     path('generate-blog',views.generate_blog, name='generate-blog'),
 
      
 ]

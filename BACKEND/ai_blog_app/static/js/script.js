@@ -17,10 +17,11 @@ document.querySelector(".button").addEventListener('click',async()=>{
 
         Circle_loading.style.display="block"
 
-        Blog_content.innerHTML=" "
+        Blog_content.innerHTML=""
 
 
         const endpointurl="/generate-blog"
+        
 
 
         try{
@@ -43,14 +44,22 @@ document.querySelector(".button").addEventListener('click',async()=>{
                     // body = actual data you send to server
                     // JSON.stringify() → converts JavaScript object → JSON.
                     // {link: YoutubeLink}  to {"link":"YoutubeLink"}
-                })
+                });
+                
 
                 let GetData= await response.json()
 
-                console.log(GetData)
+                console.log(GetData.content)
 
-                Blog_content.innerHTML=GetData.content
-                Circle_loading.style.display="none"
+                if(GetData.content)
+                    Blog_content.innerHTML=GetData.content
+
+                else if(GetData.error)
+                    Blog_content.innerHTML=GetData.error
+
+                else{
+                    Blog_content.innerHTML="Blog Not Generated"
+                }
 
             
 
@@ -61,7 +70,12 @@ document.querySelector(".button").addEventListener('click',async()=>{
          catch(error){
             console.log("Error Occured:",error)
             alert("Something went wrong pls tyr again later.")
-             Circle_loading.style.display="none"
+           
+
+        }
+
+        finally{
+              Circle_loading.style.display="none"
 
         }
 
